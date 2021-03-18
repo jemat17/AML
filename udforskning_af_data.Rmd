@@ -71,7 +71,10 @@ collected from 40 subjects.
 unique(data$X535)
 
 data %>% 
-  mutate(X535 = ifelse(X535 == "\001.0f", 1, ifelse(X535 == "\002.0f", 2, ifelse(X535 == "\003.0f", 3, ifelse(X535 == "\004.0f", 4, NA)))))
+  mutate(X535 = ifelse(X535 == "\001.0f", 1, 
+                       ifelse(X535 == "\002.0f", 2, 
+                              ifelse(X535 == "\003.0f", 3, 
+                                     ifelse(X535 == "\004.0f", 4, NA)))))
 ```
 
 
