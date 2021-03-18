@@ -532,4 +532,4 @@ EDA_Functionals_power_Filt2geomean(abs)
 EDA_Functionals_power_Filt2harmmean
 EDA_Functionals_power_Filt2mad
 EDA_Functionals_power_Filt2baseline
-Activity: 1-neutral, 2-emotional, 3-mental and 4-physical
+Activity
