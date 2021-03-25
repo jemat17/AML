@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(scales)
 library(skimr)
+library(caret)
 theme_set(theme_light())
 ```
 
@@ -70,18 +71,131 @@ collected from 40 subjects.
 #Fix the last pattern class collum
 unique(data$X535)
 
-data %>% 
+data <- data %>% 
   mutate(X535 = ifelse(X535 == "\001.0f", 1, 
                        ifelse(X535 == "\002.0f", 2, 
                               ifelse(X535 == "\003.0f", 3, 
-                                     ifelse(X535 == "\004.0f", 4, NA)))))
-```
+                                     ifelse(X535 == "\004.0f", 4, NA)))),
+         X535 = factor(X535)) 
 
+label_list <- t(labels) 
+
+```
+# Fiks columns
+```{r}
+for (col in 1:ncol(data)){
+  colnames(data)[col] <- label_list[col]
+}
+
+data <- data %>% 
+  janitor::clean_names()
+```
 
 
 # Exploring the data
 ```{r}
-skim(data)
+data %>% 
+  dplyr::select(activity,subject_index_1_40, contains('mean')) %>% 
+  group_by(activity, subject_index_1_40) %>% 
+  summarize(n = mean(ecg_original_mean))
+
+
+data %>% 
+  group_by(subject_index_1_40, activity) %>% 
+  summarize(num = n()) %>% 
+  ggplot(aes(x = subject_index_1_40, y = num, fill=activity)) +
+  geom_col(position = position_dodge2())+ 
+  labs(x = '# of rows',
+       y = 'Subject',
+       title = 'How many data points are there for each person doing each activity')
+
+# There is 28 obs for each activity for each person
+```
+
+```{r}
+plot_color_bar <- function(plot_data, column, title='') {
+  data %>% 
+    ggplot(aes( x = data$activity, y =  {{column}} , fill = {{column}}> 0))+
+    geom_col(position = position_dodge2()) + 
+    labs( x = 'Activity',
+          y = '',
+          title = title  )
+}
+
+plot_color_line <- function(plot_data, column, title='') {
+  data %>% 
+    ggplot(aes( x = data$activity, y =  {{column}} , fill = {{column}}> 0))+
+    geom_line() + 
+    labs( x = 'Activity',
+          y = '',
+          title = title  )
+}
 ```
 
 
+```{r}
+  data %>% 
+    ggplot(aes( x = activity, y = ecg_original_mean, fill = ecg_original_mean> 0))+
+    geom_col(position = position_dodge2()) + 
+    labs( x = 'Activity',
+          y = ''  )
+
+  data %>% 
+    ggplot(aes( x = activity, y = it_lf_mean, fill = it_lf_mean> 0))+
+    geom_col(position = position_dodge2()) + 
+    labs( x = 'Activity',
+          y = ''  )
+  
+    data %>% 
+    ggplot(aes( x = activity, y = ecg_hrv_mean, fill = ecg_hrv_mean> 0))+
+    geom_col(position = position_dodge2()) + 
+    labs( x = 'Activity',
+          y = ''  )
+    
+      data %>% 
+    ggplot(aes( x = activity, y = eda_processed_mean, fill = eda_processed_mean> 0))+
+    geom_col(position = position_dodge2()) + 
+    labs( x = 'Activity',
+          y = ''  )
+```
+
+
+```{r}
+data_mean <- data %>% 
+  dplyr::select(subject_index_1_40, contains('mean')) 
+
+data_mean <- data %>% 
+  dplyr::select(subject_index_1_40, contains('median')) 
+
+```
+
+```{r}
+dmy <- dummyVars(" ~ activity", data = data)
+```
+
+
+```{r}
+cor_mean_median <- cor(data, data) # make activity a dummy!
+corrplot(cor_mean_median)
+
+```
+
+
+# See graphs for all Mean vs Activity
+```{r}
+for (colo in 1:ncol(data_mean)){
+  col = colnames(data_mean[colo])
+  print(plot_color_bar(data_mean, {{col}},
+                       paste(colnames(data_mean[{{colo}}] ) ,"for each activity") ))
+}
+```
+
+# See graphs for all median vs Activity
+```{r}
+for (colo in 1:ncol(data_median)){
+  col = colnames(data_mean[colo])
+  print(plot_color_line(data_median, col,
+                       paste(colnames(data_median[colo] ) ,"for each activity") ))
+}
+
+```
