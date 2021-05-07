@@ -105,8 +105,8 @@ data %>%
   summarize(num = n()) %>% 
   ggplot(aes(x = subject_index_1_40, y = num, fill=activity)) +
   geom_col(position = position_dodge2())+ 
-  labs(x = '# of rows',
-       y = 'Subject',
+  labs(x = 'Subject',
+       y = 'Number of data rows',
        title = 'How many data points are there for each person doing each activity')
 
 # There is 28 obs for each activity for each person
